@@ -1,6 +1,6 @@
 import com.webjema.CrawlerService.CrawlerTasksProcessor;
 
-public class CrawlerTasks {
+public class CrawlerTasksStart {
 
     public static void main(String[] args) {
         CrawlerTasksProcessor processor = new CrawlerTasksProcessor(args[0]);
