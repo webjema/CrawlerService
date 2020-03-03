@@ -1,5 +1,8 @@
 package com.webjema.CrawlerService;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
@@ -8,18 +11,24 @@ import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class CrawlerTasksProcessor {
-
     private String queueName;
 
     public CrawlerTasksProcessor(String queueName) {
         this.queueName = queueName;
     }
 
-    public void Poller() {
-        final AmazonSQS sqs = AmazonSQSClientBuilder.defaultClient();
-        final String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+    public void Poller() throws InterruptedException {
+        final AmazonSQS sqs = AmazonSQSClientBuilder.standard()
+                .withRegion(Regions.EU_WEST_1)
+                .withCredentials(new EnvironmentVariableCredentialsProvider()) // https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html
+                .withClientConfiguration(new ClientConfiguration()
+                        .withMaxConnections(10))
+                .build();
+
+        final String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl(); // not URL! Just name!
 
         SetQueueAttributesRequest set_attrs_request = new SetQueueAttributesRequest()
                 .withQueueUrl(queueUrl)
@@ -35,6 +44,7 @@ public class CrawlerTasksProcessor {
             if (messages.size() > 0) {
                 messages.forEach(message -> processMessage(sqs, message));
             }
+            TimeUnit.SECONDS.sleep(30);
         }
     }
 
