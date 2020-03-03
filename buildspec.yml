@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+  build:
+    commands:
+      - java -version
+      - mvn clean compile assembly:single
+artifacts:
+    files: /target/CrawlerService-1.0-SNAPSHOT-jar-with-dependencies.jar
