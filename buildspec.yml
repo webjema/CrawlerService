@@ -9,4 +9,4 @@ phases:
       - java -version
       - mvn clean compile assembly:single
 artifacts:
-    files: /target/CrawlerService-1.0-SNAPSHOT-jar-with-dependencies.jar
+    files: target/CrawlerService-1.0-SNAPSHOT-jar-with-dependencies.jar
