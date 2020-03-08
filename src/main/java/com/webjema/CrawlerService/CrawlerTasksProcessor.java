@@ -9,15 +9,27 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webjema.CrawlerTasks.TaskData;
+import com.webjema.CrawlerTasks.TaskExecution;
+import com.webjema.CrawlerTasks.TaskExecutionResult;
 
+import java.net.MalformedURLException;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class CrawlerTasksProcessor {
     private String queueName;
+    private int tasksQuantity;
+    private String webDriverURL;
 
-    public CrawlerTasksProcessor(String queueName) {
+    public CrawlerTasksProcessor(String queueName, int tasksQuantity, String webDriverURL) {
         this.queueName = queueName;
+        this.tasksQuantity = tasksQuantity;
+        this.webDriverURL = webDriverURL;
     }
 
     public void Poller() throws InterruptedException {
@@ -39,10 +51,19 @@ public class CrawlerTasksProcessor {
                 .withQueueUrl(queueUrl)
                 .withWaitTimeSeconds(20);
 
+        ThreadPoolExecutor executor =
+                (ThreadPoolExecutor) Executors.newFixedThreadPool(this.tasksQuantity);
+
         while (true) {
             List<Message> messages = this.getMessages(sqs, receiveRequest);
             if (messages.size() > 0) {
-                messages.forEach(message -> processMessage(sqs, message));
+                messages.forEach(message -> {
+                    executor.submit(() -> processMessage(sqs, message)); // https://www.baeldung.com/thread-pool-java-and-guava
+                });
+            }
+            // wait for tasks execution
+            while(executor.getQueue().size() > 1) {
+                TimeUnit.SECONDS.sleep(1);
             }
             TimeUnit.SECONDS.sleep(30);
         }
@@ -55,6 +76,22 @@ public class CrawlerTasksProcessor {
 
     private void processMessage(AmazonSQS sqs, Message message) {
         System.out.println("Message received: " + message.getBody());
+        final ObjectMapper objectMapper = new ObjectMapper();
+        TaskData task;
+        try {
+            task = objectMapper.readValue(message.getBody(), TaskData.class);
+        } catch (JsonProcessingException e) {
+            System.out.println("Error during parsing JSON task:" + message.getBody());
+            e.printStackTrace();
+            return;
+        }
+        final TaskExecution taskExecution = new TaskExecution(task, webDriverURL);
+        try {
+            final TaskExecutionResult result = taskExecution.Execute();
+        } catch (MalformedURLException e) {
+            System.out.println("Error during executing task " + task.getDonorName());
+            e.printStackTrace();
+        }
         sqs.deleteMessage(queueName, message.getReceiptHandle());
     }
 }
