@@ -1,0 +1,20 @@
+{
+  "donorName" : "remax",
+  "executor" : "JSOUP",
+  "startUrl": "https://www.remax.lu/handlers/listinglist.ashx?mode=gallery&tt=260&cr=2&mpts=694&pt=694&rmin=600&rmax=2000&cur=EUR&b=2&sb=PriceDecreasing&page=1&sc=28&rl=174&pm=15043&cll=6577302&lzl=38075,38083,38085,38087&lsgeo=174,15043,6577302,38075&sid=1574c058-0111-45c7-889e-87e9fed7431f",
+  "headers" : {
+    "authority" : "www.remax.lu",
+    "method" : "GET",
+    "scheme" : "https",
+    "accept" : "*/*",
+    "accept-encoding" : "gzip, deflate, br",
+    "accept-language" : "en-US;q=0.8,en;q=0.7,uk;q=0.6",
+    "referer" : "https://www.remax.lu/PublicListingList.aspx",
+    "sec-fetch-dest" : "empty",
+    "sec-fetch-mode" : "cors",
+    "sec-fetch-site" : "same-origin",
+    "user-agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36",
+    "x-requested-with" : "XMLHttpRequest"
+  },
+  "taskSteps" : []
+}
