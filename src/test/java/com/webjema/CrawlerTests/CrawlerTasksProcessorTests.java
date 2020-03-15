@@ -2,13 +2,10 @@ package com.webjema.CrawlerTests;
 
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webjema.CrawlerService.CrawlerTasksProcessor;
 import com.webjema.CrawlerService.TaskExecutionFactory;
 import com.webjema.CrawlerTasks.TaskData;
-import com.webjema.CrawlerTasks.TaskExecution;
-import com.webjema.CrawlerTasks.TaskExecutors.JsoupTaskExecution;
-import org.mockito.ArgumentCaptor;
-import org.mockito.internal.matchers.Any;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
@@ -19,10 +16,10 @@ import java.nio.file.Paths;
 import static org.mockito.Mockito.*;
 
 public class CrawlerTasksProcessorTests {
+    /*
     @Test
     public void processMessageJsonParsingTestPositive() {
         System.out.println("Testing processMessageJsonParsingTestPositive");
-        //System.out.println("JSON message: " + this.getTestMessage());
 
         AmazonSQS sqs = mock(AmazonSQS.class);
         Message message = mock(Message.class);
@@ -40,8 +37,31 @@ public class CrawlerTasksProcessorTests {
         verify(taskExecution, times(1)).Execute(taskDataArgumentCaptor.capture());
 
         Assert.assertEquals(taskDataArgumentCaptor.getValue().getDonorName(), "remax");
-        System.out.println("taskDataArgumentCaptor.getValue().getDonorName() = " + taskDataArgumentCaptor.getValue().getDonorName());
-        System.out.println("taskDataArgumentCaptor.getValue().getHeaders() 'authority' = " + taskDataArgumentCaptor.getValue().getHeaders().get("authority"));
+        Assert.assertEquals(taskDataArgumentCaptor.getValue().getHeaders().get("authority"), "www.remax.lu");
+
+        // steps check
+        System.out.println("Total steps found: " + taskDataArgumentCaptor.getValue().getTaskSteps().size());
+        taskDataArgumentCaptor.getValue().getTaskSteps().forEach(step -> System.out.println("Step validation: " + step.getTaskStartValidation()));
+    }
+    */
+
+    @Test
+    public void processMessageJsonParsingTestPositive() throws JsonProcessingException {
+        System.out.println("Testing processMessageJsonParsingTestPositive");
+
+        Message message = mock(Message.class);
+        when(message.getBody()).thenReturn(this.getTestMessage());
+        TaskExecutionFactory taskExecutionFactory = mock(TaskExecutionFactory.class);
+
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory);
+        TaskData task = processor.getTaskData(message);
+
+        Assert.assertEquals(task.getDonorName(), "remax");
+        Assert.assertEquals(task.getHeaders().get("authority"), "www.remax.lu");
+
+        // steps check
+        System.out.println("Total steps found: " + task.getTaskSteps().size());
+        task.getTaskSteps().forEach(step -> System.out.println("Step validation: " + step.getTaskStartValidation()));
     }
 
     private String getTestMessage() {

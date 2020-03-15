@@ -16,7 +16,7 @@ public class JsoupTaskExecution extends TaskExecution {
         LOGGER.info("[JSOUP] Execution of task " + taskData.getDonorName());
         TaskExecutionResult result = new TaskExecutionResult();
 
-        Document doc = new Document("");
+        Document doc;
         Connection connection = Jsoup.connect(taskData.getStartUrl());
         connection.timeout(5000);
         connection.headers(taskData.getHeaders());
@@ -30,6 +30,7 @@ public class JsoupTaskExecution extends TaskExecution {
         }
 
         LOGGER.info("Response content = " + doc.outerHtml());
+
         return result;
     }
 

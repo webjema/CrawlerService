@@ -12,13 +12,11 @@ import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.webjema.CrawlerTasks.ExecutorTypes;
 import com.webjema.CrawlerTasks.TaskData;
 import com.webjema.CrawlerTasks.TaskExecution;
-import com.webjema.CrawlerTasks.TaskExecutors.JsoupTaskExecution;
-import com.webjema.CrawlerTasks.TaskExecutors.WebdriverTaskExecution;
 import com.webjema.CrawlerTasks.TaskExecutionResult;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -86,10 +84,9 @@ public class CrawlerTasksProcessor {
     @VisibleForTesting
     public void processMessage(AmazonSQS sqs, Message message) {
         LOGGER.info("Message received: " + message.getBody());
-        final ObjectMapper objectMapper = new ObjectMapper();
         TaskData task;
         try {
-            task = objectMapper.readValue(message.getBody(), TaskData.class);
+            task = this.getTaskData(message);
         } catch (JsonProcessingException e) {
             LOGGER.error("Error during parsing JSON task:" + message.getBody());
             e.printStackTrace();
@@ -101,7 +98,15 @@ public class CrawlerTasksProcessor {
         } catch (MalformedURLException e) {
             LOGGER.error("Error during executing task " + task.getDonorName());
             e.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.error("Error during executing task " + task.getDonorName());
+            e.printStackTrace();
         }
         sqs.deleteMessage(queueName, message.getReceiptHandle());
+    }
+
+    @VisibleForTesting
+    public TaskData getTaskData(Message message) throws JsonProcessingException {
+        return new ObjectMapper().readValue(message.getBody(), TaskData.class);
     }
 }
