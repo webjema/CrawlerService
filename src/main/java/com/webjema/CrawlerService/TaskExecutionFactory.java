@@ -3,6 +3,7 @@ package com.webjema.CrawlerService;
 import com.webjema.CrawlerTasks.ExecutorTypes;
 import com.webjema.CrawlerTasks.TaskData;
 import com.webjema.CrawlerTasks.TaskExecution;
+import com.webjema.CrawlerTasks.TaskExecutors.JsonTaskExecution;
 import com.webjema.CrawlerTasks.TaskExecutors.JsoupTaskExecution;
 import com.webjema.CrawlerTasks.TaskExecutors.WebdriverTaskExecution;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +23,8 @@ public class TaskExecutionFactory {
             taskExecution = new WebdriverTaskExecution(webDriverURL);
         } else if (task.getExecutor() == ExecutorTypes.JSOUP) {
             taskExecution = new JsoupTaskExecution();
+        } else if (task.getExecutor() == ExecutorTypes.JSON) {
+            taskExecution = new JsonTaskExecution();
         } else {
             taskExecution = new TaskExecution();
             LOGGER.error("Executor type is not supported. Found " + task.getExecutor());

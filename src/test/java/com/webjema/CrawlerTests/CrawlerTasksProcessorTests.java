@@ -1,5 +1,6 @@
 package com.webjema.CrawlerTests;
 
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,10 +54,12 @@ public class CrawlerTasksProcessorTests {
         when(message.getBody()).thenReturn(this.getTestMessage());
         TaskExecutionFactory taskExecutionFactory = mock(TaskExecutionFactory.class);
 
-        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory);
+        DynamoDB ddb = mock(DynamoDB.class);
+
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddb);
         TaskData task = processor.getTaskData(message);
 
-        Assert.assertEquals(task.getDonorName(), "remax");
+        Assert.assertEquals(task.getDonorName(), "remax.lu");
         Assert.assertEquals(task.getHeaders().get("authority"), "www.remax.lu");
 
         // steps check
@@ -65,7 +68,7 @@ public class CrawlerTasksProcessorTests {
     }
 
     private String getTestMessage() {
-        return this.readFileContent("src/test/resources/sqs_message_1.json");
+        return this.readFileContent("src/test/resources/sqs_message_remax.json");
     }
 
     private static String readFileContent(String filePath)

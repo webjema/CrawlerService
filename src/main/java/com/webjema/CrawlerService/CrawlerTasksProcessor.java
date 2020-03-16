@@ -3,6 +3,8 @@ package com.webjema.CrawlerService;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.Message;
@@ -30,13 +32,15 @@ public class CrawlerTasksProcessor {
     private String queueName;
     private int tasksQuantity;
     private TaskExecutionFactory taskExecutionFactory;
+    private DynamoDB ddb;
 
     private static final Logger LOGGER = LogManager.getLogger(CrawlerTasksProcessor.class.getName());
 
-    public CrawlerTasksProcessor(String queueName, int tasksQuantity, TaskExecutionFactory taskExecutionFactory) {
+    public CrawlerTasksProcessor(String queueName, int tasksQuantity, TaskExecutionFactory taskExecutionFactory, DynamoDB ddb) {
         this.queueName = queueName;
         this.tasksQuantity = tasksQuantity;
         this.taskExecutionFactory = taskExecutionFactory;
+        this.ddb = ddb;
     }
 
     public void Poller() throws InterruptedException {
@@ -94,7 +98,7 @@ public class CrawlerTasksProcessor {
         }
         TaskExecution taskExecution = this.taskExecutionFactory.getTaskExecution(task);
         try {
-            final TaskExecutionResult result = taskExecution.Execute(task);
+            final TaskExecutionResult result = taskExecution.Execute(task, this.ddb);
         } catch (MalformedURLException e) {
             LOGGER.error("Error during executing task " + task.getDonorName());
             e.printStackTrace();

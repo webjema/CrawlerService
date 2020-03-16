@@ -1,5 +1,6 @@
 package com.webjema.CrawlerTasks.TaskExecutors;
 
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.webjema.CrawlerTasks.TaskData;
 import com.webjema.CrawlerTasks.TaskExecution;
 import com.webjema.CrawlerTasks.TaskExecutionResult;
@@ -22,14 +23,14 @@ public class WebdriverTaskExecution extends TaskExecution {
     }
 
     @Override
-    public TaskExecutionResult Execute(TaskData taskData) throws MalformedURLException {
+    public TaskExecutionResult Execute(TaskData taskData, DynamoDB ddb) throws MalformedURLException {
         LOGGER.info("[WEBDRIVER] Execution of task " + taskData.getDonorName());
         TaskExecutionResult result = new TaskExecutionResult();
         DesiredCapabilities capability = DesiredCapabilities.chrome();
         webdriver = new RemoteWebDriver(new URL(webDriverURL), capability);
-
-        LOGGER.info("Open URL " + taskData.getStartUrl());
-        webdriver.get(taskData.getStartUrl());
+        final String url = taskData.getBaseUrl() + taskData.getStartUri();
+        LOGGER.info("Open URL " + url);
+        webdriver.get(url);
         try {
             TimeUnit.SECONDS.sleep(10);
         } catch (InterruptedException e) {

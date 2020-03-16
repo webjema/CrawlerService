@@ -1,5 +1,10 @@
 package com.webjema.CrawlerTests;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.sqs.model.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webjema.CrawlerService.CrawlerTasksProcessor;
@@ -25,15 +30,23 @@ public class JsonTaskExecutionTests {
         when(message.getBody()).thenReturn(this.getTestMessage());
         TaskExecutionFactory taskExecutionFactory = mock(TaskExecutionFactory.class);
 
-        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory);
+        //DynamoDB ddb = mock(DynamoDB.class);
+        final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("https://dynamodb.eu-west-1.amazonaws.com", "eu-west-1"))
+                .build();
+        DynamoDB ddb = new DynamoDB(client);
+        TableDescription tableDescription = ddb.getTable("DonorsDocuments").describe();
+        System.out.println("Table description: " + tableDescription.getTableStatus());
+
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddb);
         TaskData task = processor.getTaskData(message);
 
         JsonTaskExecution jsonTaskExecution = new JsonTaskExecution();
-        TaskExecutionResult result = jsonTaskExecution.Execute(task);
+        TaskExecutionResult result = jsonTaskExecution.Execute(task, ddb);
     }
 
     private String getTestMessage() {
-        return this.readFileContent("src/test/resources/sqs_message_1.json");
+        return this.readFileContent("src/test/resources/sqs_message_remax.json");
     }
 
     private static String readFileContent(String filePath)

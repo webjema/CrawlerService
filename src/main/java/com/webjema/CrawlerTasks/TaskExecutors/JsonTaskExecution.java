@@ -1,7 +1,11 @@
 package com.webjema.CrawlerTasks.TaskExecutors;
 
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webjema.CrawlerDonors.DonorLinksResult;
+import com.webjema.CrawlerDonors.DonorProcessor;
+import com.webjema.CrawlerDonors.DonorsProcessorsFactory;
 import com.webjema.CrawlerTasks.TaskData;
 import com.webjema.CrawlerTasks.TaskExecution;
 import com.webjema.CrawlerTasks.TaskExecutionResult;
@@ -15,11 +19,12 @@ import java.net.URL;
 public class JsonTaskExecution extends TaskExecution {
 
     @Override
-    public TaskExecutionResult Execute(TaskData taskData) throws IOException {
-        LOGGER.info("[JSON] Execution of task " + taskData.getDonorName());
+    public TaskExecutionResult Execute(TaskData taskData, DynamoDB ddb) throws IOException {
+        this.ddb = ddb;
+        LOGGER.info("[JSON] Execution of task " + taskData.getDonorName() + " with DDB = " + this.ddb);
         TaskExecutionResult result = new TaskExecutionResult();
 
-        URL url = new URL(taskData.getStartUrl());
+        URL url = new URL(taskData.getBaseUrl() + taskData.getStartUri());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         taskData.getHeaders().forEach((k,v)->connection.setRequestProperty(k, v));
@@ -33,14 +38,19 @@ public class JsonTaskExecution extends TaskExecution {
 
         String content = this.getUncompressedContent(connection.getInputStream(), encoding);
         connection.disconnect();
-        LOGGER.info("Response content = " + content);
+        //LOGGER.info("Response content = " + content);
 
         JsonNode jsonNode = new ObjectMapper().readTree(content);
-
         Document document = Jsoup.parse(jsonNode.get("llContentContainerHtml").asText());
 
-        LOGGER.info("Document content = " + document.outerHtml());
+        //LOGGER.info("Document content = " + document.outerHtml());
+        DonorProcessor donorProcessor = DonorsProcessorsFactory.createProcessor(taskData);
+        DonorLinksResult linkResults = donorProcessor.processDocumentForLinks(taskData, document);
 
+        linkResults.documentsLinks.forEach(l -> System.out.println("Document link: " + l));
+        linkResults.pagesLinks.forEach(l -> System.out.println("Page link: " + l));
+
+        this.saveDocumentsLinks(taskData, linkResults.documentsLinks);
         return result;
     }
 

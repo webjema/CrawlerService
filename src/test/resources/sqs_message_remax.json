@@ -1,7 +1,9 @@
 {
-  "donorName" : "remax",
-  "executor" : "JSOUP",
-  "startUrl": "https://www.remax.lu/handlers/listinglist.ashx?mode=gallery&tt=260&cr=2&mpts=694&pt=694&cur=EUR&sb=PriceDecreasing&page=1&sc=28&rl=174&lsgeo=174,0,0,0",
+  "donorName" : "remax.lu",
+  "donorProcessor" : "RemaxLuProcessor",
+  "executor" : "JSON",
+  "baseUrl" : "https://www.remax.lu",
+  "startUri": "/handlers/listinglist.ashx?mode=gallery&tt=260&cr=2&mpts=694&pt=694&cur=EUR&sb=PriceDecreasing&page=1&sc=28&rl=174&lsgeo=174,0,0,0",
   "headers" : {
     "authority" : "www.remax.lu",
     "method" : "GET",
