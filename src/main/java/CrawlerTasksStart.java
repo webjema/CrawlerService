@@ -1,6 +1,8 @@
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.webjema.CrawlerService.CrawlerTasksProcessor;
 import com.webjema.CrawlerService.TaskExecutionFactory;
@@ -19,8 +21,11 @@ public class CrawlerTasksStart {
         final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("https://dynamodb.eu-west-1.amazonaws.com", "eu-west-1"))
                 .build();
-        DynamoDB ddb = new DynamoDB(client);
-        CrawlerTasksProcessor processor = new CrawlerTasksProcessor(args[0], tasks_quantity, new TaskExecutionFactory(webDriverURL), ddb);
+        final DynamoDBMapperConfig.Builder configBuilder = new DynamoDBMapperConfig.Builder();
+        configBuilder.setSaveBehavior(DynamoDBMapperConfig.SaveBehavior.UPDATE);
+        DynamoDBMapperConfig dynamoDBMapperConfig = configBuilder.build();
+        DynamoDBMapper ddbm = new DynamoDBMapper(client);
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor(args[0], tasks_quantity, new TaskExecutionFactory(webDriverURL), ddbm);
         processor.Poller();
     }
 

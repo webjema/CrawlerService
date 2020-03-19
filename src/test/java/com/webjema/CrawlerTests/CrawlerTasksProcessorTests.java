@@ -1,5 +1,6 @@
 package com.webjema.CrawlerTests;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.model.Message;
@@ -54,9 +55,9 @@ public class CrawlerTasksProcessorTests {
         when(message.getBody()).thenReturn(this.getTestMessage());
         TaskExecutionFactory taskExecutionFactory = mock(TaskExecutionFactory.class);
 
-        DynamoDB ddb = mock(DynamoDB.class);
+        DynamoDBMapper ddbm = mock(DynamoDBMapper.class);
 
-        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddb);
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddbm);
         TaskData task = processor.getTaskData(message);
 
         Assert.assertEquals(task.getDonorName(), "remax.lu");

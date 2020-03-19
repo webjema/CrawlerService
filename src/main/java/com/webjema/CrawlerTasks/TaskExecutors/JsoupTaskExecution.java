@@ -1,5 +1,6 @@
 package com.webjema.CrawlerTasks.TaskExecutors;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.webjema.CrawlerTasks.TaskData;
 import com.webjema.CrawlerTasks.TaskExecution;
@@ -13,7 +14,7 @@ import java.io.IOException;
 public class JsoupTaskExecution extends TaskExecution {
 
     @Override
-    public TaskExecutionResult Execute(TaskData taskData, DynamoDB ddb) {
+    public TaskExecutionResult Execute(TaskData taskData, DynamoDBMapper ddbm) {
         LOGGER.info("[JSOUP] Execution of task " + taskData.getDonorName());
         TaskExecutionResult result = new TaskExecutionResult();
         final String url = taskData.getBaseUrl() + taskData.getStartUri();

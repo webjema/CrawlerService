@@ -1,5 +1,6 @@
 package com.webjema.CrawlerTasks.TaskExecutors;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,9 +20,9 @@ import java.net.URL;
 public class JsonTaskExecution extends TaskExecution {
 
     @Override
-    public TaskExecutionResult Execute(TaskData taskData, DynamoDB ddb) throws IOException {
-        this.ddb = ddb;
-        LOGGER.info("[JSON] Execution of task " + taskData.getDonorName() + " with DDB = " + this.ddb);
+    public TaskExecutionResult Execute(TaskData taskData, DynamoDBMapper ddbm) throws IOException {
+        this.ddbm = ddbm;
+        LOGGER.info("[JSON] Execution of task " + taskData.getDonorName() + " with DDB = " + this.ddbm);
         TaskExecutionResult result = new TaskExecutionResult();
 
         URL url = new URL(taskData.getBaseUrl() + taskData.getStartUri());

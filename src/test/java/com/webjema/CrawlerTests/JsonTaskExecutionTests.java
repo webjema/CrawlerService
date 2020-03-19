@@ -3,6 +3,7 @@ package com.webjema.CrawlerTests;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.sqs.model.Message;
@@ -34,15 +35,13 @@ public class JsonTaskExecutionTests {
         final AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("https://dynamodb.eu-west-1.amazonaws.com", "eu-west-1"))
                 .build();
-        DynamoDB ddb = new DynamoDB(client);
-        TableDescription tableDescription = ddb.getTable("DonorsDocuments").describe();
-        System.out.println("Table description: " + tableDescription.getTableStatus());
+        DynamoDBMapper ddbm = new DynamoDBMapper(client);
 
-        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddb);
+        CrawlerTasksProcessor processor = new CrawlerTasksProcessor("queue-name", 1, taskExecutionFactory, ddbm);
         TaskData task = processor.getTaskData(message);
 
         JsonTaskExecution jsonTaskExecution = new JsonTaskExecution();
-        TaskExecutionResult result = jsonTaskExecution.Execute(task, ddb);
+        TaskExecutionResult result = jsonTaskExecution.Execute(task, ddbm);
     }
 
     private String getTestMessage() {

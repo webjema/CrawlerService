@@ -1,9 +1,9 @@
 package com.webjema.CrawlerTasks;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
-import com.amazonaws.services.dynamodbv2.model.ReturnValue;
+import com.webjema.models.DocumentDataModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,9 +18,9 @@ import java.util.zip.GZIPInputStream;
 
 public class TaskExecution {
     protected static final Logger LOGGER = LogManager.getLogger(TaskExecution.class.getName());
-    protected DynamoDB ddb;
+    protected DynamoDBMapper ddbm;
 
-    public TaskExecutionResult Execute(TaskData taskData, DynamoDB ddb) throws IOException {
+    public TaskExecutionResult Execute(TaskData taskData, DynamoDBMapper ddbm) throws IOException {
         LOGGER.warn("Default task execution was called for " + taskData.getDonorName());
         TaskExecutionResult result = new TaskExecutionResult();
         return result;
@@ -42,13 +42,21 @@ public class TaskExecution {
     }
 
     protected void saveDocumentsLinks(TaskData taskData, List<String> links) {
+        for (String link : links) {
+            DocumentDataModel docData = new DocumentDataModel();
+            docData.setDonorName(taskData.getDonorName());
+            docData.setDocumentLink(link);
+            this.ddbm.save(docData);
+        }
+
+        /*
         List<UpdateItemSpec> itemsToPut = new ArrayList<>();
         links.forEach(link -> itemsToPut.add(new UpdateItemSpec()
                             .withPrimaryKey("DonorName", taskData.getDonorName(), "DocumentLink", link)
                             .withAttributeUpdate(new AttributeUpdate("FoundTime").put(Instant.now().toString()))
                             )
         );
-        Table table = this.ddb.getTable("DonorsDocuments");
+        Table table = this.ddbm.getTable("DonorsDocuments");
         try {
             itemsToPut.forEach(item -> {
                 UpdateItemOutcome outcome = table.updateItem(item);
@@ -62,6 +70,8 @@ public class TaskExecution {
                 System.out.println(el.toString());
             }
         }
+
+         */
     }
 /*
     private void saveItemsToDB(List<Item> itemsToPut) {
